@@ -1,0 +1,8 @@
+[package]
+name = "taxi-learning-bot"
+version = "0.1.0"
+authors = ["Fredrik <fredrik@parity.io>"]
+
+[dependencies]
+renforce = { git = "https://github.com/NivenT/REnforce.git" }
+taxi = { path = "../taxi" }
