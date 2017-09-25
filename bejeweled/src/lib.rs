@@ -1,4 +1,6 @@
-use rand;
+extern crate rand;
+extern crate time;
+
 use rand::{Rand, Rng};
 use std::fmt;
 use std::cmp;
@@ -10,7 +12,7 @@ static SCORE_5: i32 = 30;
 static FOLLOWUP_BONUS: i32 = 5;
 
 /// Colors available to be placed on the game board
-#[derive(Debug, Clone, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone, Hash)]
 pub enum Color {
 	Blue,
 	Green,
@@ -64,7 +66,7 @@ pub fn random_grid() -> Grid {
 }
 
 /// A cell is a pair of indexes to the grid matrix. Assumptions are made throughout the code that the usize's will be >= 0 and <= 7
-type Cell = (usize, usize);
+pub type Cell = (usize, usize);
 
 /// Return the vertical neighbours (the rows above and below)
 fn row_neighbours(cell: &Cell) -> Vec<Cell> {
@@ -91,6 +93,7 @@ fn col_neighbours(cell: &Cell) -> Vec<Cell> {
 }
 
 /// A move is swapping two pieces at coordinates row1, col1, row2, col2
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Move {
 	pub row1: usize,
 	pub col1: usize,
@@ -113,6 +116,7 @@ impl Move {
 }
 
 /// A game is the collection of stats about the game and its current grid
+#[derive(PartialEq, Eq, Clone, Hash)]
 pub struct Game {
 	/// Count of moves so far
 	pub moves: i32,
@@ -120,19 +124,26 @@ pub struct Game {
 	pub score: i32,
 	/// 8x8 grid of colors
 	pub grid: Grid,
+	/// Start time, unix timestamp in ns
+	pub start_time: u64,
+	/// Defines whether or not the game has a time-limit
+	pub time_limit: bool,
 }
 
 impl Game {
 	/// Create a new game, creates a random board then ensures that it's in a valid state before returning
-	pub fn new() -> Game {
+	pub fn new(time_limit: bool) -> Game {
 		let mut game = Game {
 			moves: 0,
 			score: 0,
 			grid: random_grid(),
+			start_time: 0,
+			time_limit: time_limit,
 		};
 		game.clear_board(true);
 		game.score = 0;
 		game.moves = 0;
+		game.start_time = time::precise_time_ns();
 		game
 	}
 
@@ -150,14 +161,25 @@ impl Game {
 		println!("-----------------");
 	}
 
-	/// The top level function to make a move on the board, only executed if the move is valid, and "undone" if it doesn't score.
-	pub fn make_move(&mut self, mov: &Move) {
-		if mov.is_valid() {
+	/// The top level function to make a move on the board,
+	/// only executed if the move is valid, and "undone" if it doesn't score.
+	/// Will return true if a move was made or false if the move could not be made,
+	/// either because it was invalid or because the time is out
+	pub fn make_move(&mut self, mov: &Move) -> bool {
+		// Sleep for a little while here to prevent spamming moves, the game is more or less endless
+		// so without some rate limiting the winning strategy is always to play as fast as possible.
+		std::thread::sleep(std::time::Duration::from_millis(50));
+		let now = time::precise_time_ns();
+		if mov.is_valid() && self.start_time + 60 * 1e9 as u64 >= now {
 			self.moves += 1;
 			self.execute_move(mov);
 			if self.clear_board(true) == 0 {
 				self.execute_move(mov);
+				return false;
 			}
+			true
+		} else {
+			false
 		}
 	}
 
@@ -189,14 +211,14 @@ impl Game {
 	}
 
 	/// Swap the places of two colors on the grid, this could be optimized to remove cloning
-	fn execute_move(&mut self, mov: &Move) {
+	pub fn execute_move(&mut self, mov: &Move) {
 		let moved = self.grid[mov.row1][mov.col1].clone();
 		self.grid[mov.row1][mov.col1] = self.grid[mov.row2][mov.col2].clone();
 		self.grid[mov.row2][mov.col2] = moved;
 	}
 
 	/// Gets all the pieces to remove from the board both row-wise and column-wise
-	fn pieces_to_remove(&self) -> Vec<Cell> {
+	pub fn pieces_to_remove(&self) -> Vec<Cell> {
 		let mut all_cells = HashSet::new();
 		for r in 0..8 {
 			for c in 0..8 {

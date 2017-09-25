@@ -1,12 +1,10 @@
-extern crate rand;
-
-mod game;
+extern crate bejeweled;
 
 use std::io;
-use game::*;
+use bejeweled::*;
 
 pub fn main() {
-	let mut game = Game::new();
+	let mut game = Game::new(true);
 	game.print_board();
 	loop {
 		let mut input = String::new();
