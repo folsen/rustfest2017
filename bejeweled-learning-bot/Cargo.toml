@@ -1,0 +1,9 @@
+[package]
+name = "bejeweled-learning-bot"
+version = "0.1.0"
+authors = ["Fredrik <fredrik@parity.io>"]
+
+[dependencies]
+rurel = "0.1"
+rand = "0.3"
+bejeweled = { path = "../bejeweled" }

@@ -29,33 +29,46 @@ impl GameState {
 	}
 
 	pub fn reward(&self) -> f64 {
-		unimplemented!()
+		if self.state.has_won() { 30. } else { 0. }
 	}
 
-	pub fn q_state(&self) -> ?? {
-		unimplemented!()
+	pub fn q_state(&self) -> (u32, Vec<(u32, u32)>) {
+		(
+			if self.state.picked_up { 1 } else { 0 },
+			vec![self.state.position, self.state.passenger, self.state.goal]
+		)
 	}
 }
 
 impl Environment for GameState {
-	type State = ??;
+	type State = (Finite, Vec<(Finite, Finite)>);
 	type Action = Finite;
 
 	fn state_space(&self) -> Self::State {
-		unimplemented!()
+		(Finite::new(1), vec![(Finite::new(9), Finite::new(9)), (Finite::new(9), Finite::new(9)), (Finite::new(9), Finite::new(9))])
 	}
 	fn action_space(&self) -> Finite {
 		// The agent has 4 actions: move {up, down, left, right}
 		Finite::new(4)
 	}
 	fn step(&mut self, action: &u32) -> Observation<Self::State> {
-		unimplemented!()
+		self.state.enter_move(&Dir::from_u32(action), false);
+		Observation {
+			state: self.q_state(),
+			reward: self.reward(),
+			done: self.state.has_won()
+		}
 	}
 	fn reset(&mut self) -> Observation<Self::State> {
-		unimplemented!()
+		self.state = Game::new(false);
+		Observation {
+			state: self.q_state(),
+			reward: self.reward(),
+			done: false
+		}
 	}
 	fn render(&self) {
-		unimplemented!()
+		self.state.print_map();
 	}
 }
 

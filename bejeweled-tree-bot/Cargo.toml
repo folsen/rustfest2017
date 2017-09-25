@@ -1,0 +1,8 @@
+[package]
+name = "bejeweled-tree-bot"
+version = "0.1.0"
+authors = ["Fredrik <fredrik@parity.io>"]
+
+[dependencies]
+indextree = "1.0"
+bejeweled = { path = "../bejeweled" }
