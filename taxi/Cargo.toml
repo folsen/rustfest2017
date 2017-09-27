@@ -6,3 +6,10 @@ authors = ["Fredrik <fredrik@parity.io>"]
 [dependencies]
 termion = "1.3"
 rand = "0.3"
+
+[lib]
+name = "taxi"
+
+[[bin]]
+name = "taxi-cli"
+path = "src/main.rs"
