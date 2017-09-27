@@ -38,25 +38,25 @@ struct Leaderboard {
 }
 
 impl Service for Leaderboard {
-    type Request = Request;
-    type Response = Response;
-    type Error = hyper::Error;
-    type Future = FutureResult<Response, hyper::Error>;
+	type Request = Request;
+	type Response = Response;
+	type Error = hyper::Error;
+	type Future = FutureResult<Response, hyper::Error>;
 
-    fn call(&self, req: Request) -> Self::Future {
-        futures::future::ok(match (req.method(), req.path()) {
-            (&Get, "/") => {
+	fn call(&self, req: Request) -> Self::Future {
+		futures::future::ok(match (req.method(), req.path()) {
+			(&Get, "/") => {
 				let scores = self.scores.read().iter()
 					.rev()
 					.map(|(user, score)| format!("{}: {}", user, score))
 					.collect::<Vec<_>>()
 					.join("\n");
 
-                Response::new()
-                    .with_header(ContentLength(scores.len() as u64))
-                    .with_body(scores)
-            },
-            (&Post, "/submit") => {
+				Response::new()
+					.with_header(ContentLength(scores.len() as u64))
+					.with_body(scores)
+			},
+			(&Post, "/submit") => {
 				let url = ok_or_400!(Url::parse(req.uri().as_ref()));
 				let queries: HashMap<_, _> = url.query_pairs().collect();
 				let name = some_or_400!(queries.get("name"));
@@ -65,20 +65,20 @@ impl Service for Leaderboard {
 				self.scores.write().insert(name.to_string(), score_u64);
 				Response::new().with_status(StatusCode::Ok)
 			},
-            _ => {
-                Response::new().with_status(StatusCode::NotFound)
-            }
-        })
-    }
+			_ => {
+				Response::new().with_status(StatusCode::NotFound)
+			}
+		})
+	}
 
 }
 
 
 fn main() {
-    pretty_env_logger::init().unwrap();
-    let addr = "127.0.0.1:1337".parse().unwrap();
+	pretty_env_logger::init().unwrap();
+	let addr = "127.0.0.1:1337".parse().unwrap();
 
-    let server = Http::new().bind(&addr, || Ok(Leaderboard::default())).unwrap();
-    println!("Listening on http://{} with 1 thread.", server.local_addr().unwrap());
-    server.run().unwrap();
+	let server = Http::new().bind(&addr, || Ok(Leaderboard::default())).unwrap();
+	println!("Listening on http://{} with 1 thread.", server.local_addr().unwrap());
+	server.run().unwrap();
 }
