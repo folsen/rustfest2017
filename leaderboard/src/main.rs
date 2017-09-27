@@ -34,7 +34,7 @@ macro_rules! some_or_400 {
 
 #[derive(Default)]
 struct Leaderboard {
-	scores: RwLock<BTreeMap<String, u64>>,
+	scores: RwLock<HashMap<String, u64>>,
 }
 
 impl Service for Leaderboard {
@@ -46,9 +46,12 @@ impl Service for Leaderboard {
 	fn call(&self, req: Request) -> Self::Future {
 		futures::future::ok(match (req.method(), req.path()) {
 			(&Get, "/") => {
-				let scores = self.scores.read().iter()
-					.rev()
-					.map(|(user, score)| format!("{}: {}", user, score))
+				let unlocked_scores = self.scores.read();
+				let scores = unlocked_scores.iter()
+					.map(|(user, score)| (*score, user))
+					.collect::<BTreeMap<_, _>>()
+					.into_iter()
+					.map(|(score, user)| format!("{}: {}", user, score))
 					.collect::<Vec<_>>()
 					.join("\n");
 
