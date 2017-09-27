@@ -4,5 +4,6 @@ members = [
 	"roguelike-tree-bot",
 	"roguelike",
 	"taxi-learning-bot",
-	"taxi"
+	"taxi",
+	"leaderboard"
 ]
