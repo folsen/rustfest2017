@@ -10,6 +10,7 @@ use ansi_term::Colour::{White, Black, Yellow, Green, Cyan};
 fn clear_screen() {
 	std::io::stdout().write_all("\x1b[2J\x1b[1;1H".as_bytes()).unwrap()
 }
+
 /// Move direction
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum Dir {
