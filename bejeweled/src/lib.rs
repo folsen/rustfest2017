@@ -1,10 +1,12 @@
 extern crate rand;
 extern crate time;
+extern crate ansi_term;
 
 use rand::{Rand, Rng};
 use std::fmt;
 use std::cmp;
 use std::collections::{HashMap, HashSet};
+use ansi_term::Colour::{Blue, Green, Yellow, Purple, Red, White};
 
 static SCORE_3: i32 = 10;
 static SCORE_4: i32 = 20;
@@ -25,12 +27,12 @@ pub enum Color {
 impl fmt::Display for Color {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let c = match *self {
-			Color::Blue => "B",
-			Color::Green => "G",
-			Color::Orange => "O",
-			Color::Purple => "P",
-			Color::Red => "R",
-			Color::White => "W",
+			Color::Blue => Blue.paint("\u{2588}"),
+			Color::Green => Green.paint("\u{2588}"),
+			Color::Orange => Yellow.paint("\u{2588}"),
+			Color::Purple => Purple.paint("\u{2588}"),
+			Color::Red => Red.paint("\u{2588}"),
+			Color::White => White.paint("\u{2588}"),
 		};
 		write!(f, "{}", c)
 	}

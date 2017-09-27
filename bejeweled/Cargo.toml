@@ -6,6 +6,7 @@ authors = ["Fredrik <fredrik@parity.io>"]
 [dependencies]
 rand = "0.3"
 time = "0.1"
+ansi_term = "0.9"
 
 [lib]
 name = "bejeweled"
