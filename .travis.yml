@@ -1,0 +1,31 @@
+sudo: false
+language: rust
+branches:
+  only:
+  - master
+  - /^parity-.*$/
+
+cache: cargo
+
+matrix:
+  fast_finish: false
+  include:
+  - rust: stable
+  - rust: beta
+  - rust: nightly
+  allow_failures:
+  - rust: nightly
+
+script:
+  - cargo build -p taxi -p roguelike -p bejeweled
+  - cargo test -p taxi -p roguelike -p bejeweled
+
+after_success: |
+  [ $TRAVIS_BRANCH = master ] &&
+  [ $TRAVIS_PULL_REQUEST = false ] &&
+  [ $TRAVIS_RUST_VERSION = stable ] &&
+  cargo doc -p taxi -p roguelike -p bejeweled &&
+  echo '<meta http-equiv=refresh content=0;url=taxi/index.html>' > target/doc/index.html &&
+  pip install --user ghp-import &&
+  /home/travis/.local/bin/ghp-import -n target/doc &&
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages

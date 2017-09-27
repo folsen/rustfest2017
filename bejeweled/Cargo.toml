@@ -6,3 +6,10 @@ authors = ["Fredrik <fredrik@parity.io>"]
 [dependencies]
 rand = "0.3"
 time = "0.1"
+
+[lib]
+name = "bejeweled"
+
+[[bin]]
+name = "bejeweled-cli"
+path = "src/main.rs"
