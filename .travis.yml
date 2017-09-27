@@ -17,7 +17,7 @@ matrix:
   - rust: nightly
 
 script:
-  - cargo build -p taxi -p taxi-cli -p roguelike -p roguelike-cli -p bejeweled -p bejeweled-cli
+  - cargo build -p taxi -p roguelike -p bejeweled
   - cargo test -p taxi -p roguelike -p bejeweled
 
 after_success: |
