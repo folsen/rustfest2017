@@ -1,13 +1,15 @@
-extern crate termion;
+extern crate ansi_term;
 extern crate rand;
 
 use rand::Rng;
 use std::fmt;
-use std::io::{Write, stdout, stdin};
+use std::io::Write;
 
-use termion::event::Key;
-use termion::input::TermRead;
-use termion::raw::IntoRawMode;
+use ansi_term::Colour::{White, Black, Yellow, Green, Cyan};
+
+fn clear_screen() {
+	std::io::stdout().write_all("\x1b[2J\x1b[1;1H".as_bytes()).unwrap()
+}
 
 /// Move direction
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -42,10 +44,10 @@ enum Object {
 impl fmt::Display for Object {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match *self {
-			Object::Wall => write!(f, "{}{}", termion::color::Fg(termion::color::White), "\u{2588}"),
-			Object::Passenger => write!(f, "{}{}", termion::color::Fg(termion::color::Yellow), "\u{2588}"),
-			Object::Goal => write!(f, "{}{}", termion::color::Fg(termion::color::Green), "\u{2588}"),
-			Object::Empty => write!(f, "{}{}", termion::color::Fg(termion::color::Black), "\u{2588}"),
+			Object::Wall => write!(f, "{}", White.paint("\u{2588}")),
+			Object::Passenger => write!(f, "{}", Yellow.paint("\u{2588}")),
+			Object::Goal => write!(f, "{}", Green.paint("\u{2588}")),
+			Object::Empty => write!(f, "{}", Black.paint("\u{2588}")),
 		}
 	}
 }
@@ -141,31 +143,7 @@ impl Game {
 		}
 	}
 
-	/// Enter the main game loop that prints the map and accepts input
-	pub fn enter_loop(&mut self) {
-		let stdin = stdin();
-		// This line is a bit odd, we need to call this and assign it to a variable, because that has some side effects,
-		// it's ugly, but necessary, or stdin won't parse the keys without requiring <Enter> to be pressed
-		let mut stdout = stdout().into_raw_mode().unwrap();
-
-		for c in stdin.keys() {
-			match c.unwrap() {
-				Key::Esc => break,
-				Key::Up => self.make_move(Dir::Up),
-				Key::Right => self.make_move(Dir::Right),
-				Key::Down => self.make_move(Dir::Down),
-				Key::Left => self.make_move(Dir::Left),
-				_ => {}
-			}
-			self.print_map();
-			if self.has_won() {
-				write!(stdout, "You won the game!").unwrap();
-				break;
-			}
-		}
-	}
-
-	fn make_move(&mut self, dir: Dir) {
+	pub fn make_move(&mut self, dir: Dir) {
 		self.moves += 1;
 		let target = match dir {
 			Dir::Up => (self.position.0 - 1, self.position.1),
@@ -188,25 +166,21 @@ impl Game {
 	}
 
 	pub fn print_map(&self) {
-		let mut stdout = stdout().into_raw_mode().unwrap();
-		write!(stdout, "{}{}", termion::clear::All, termion::cursor::Goto(1, 1)).unwrap();
+		clear_screen();
 		for r in 0..Game::WORLD_HEIGHT {
 			for c in 0..Game::WORLD_WIDTH {
 				let pos = (r as u32, c as u32);
 				if pos == self.position {
-					write!(stdout, "{}{}", termion::color::Fg(termion::color::LightCyan), "\u{2588}").unwrap();
+					print!("{}", Cyan.paint("\u{2588}"));
 				} else {
-					write!(stdout, "{}", self.world[r][c]).unwrap();
+					print!("{}", self.world[r][c]);
 				}
 			}
-			write!(stdout, "\n{}", termion::cursor::Goto(1, (r + 2) as u16)).unwrap();
+			print!("\n\r");
 		}
-		write!(stdout, "\nMoves: {}", self.moves).unwrap();
-		write!(stdout,
-			   "\n\n{}Press <ESC> to exit game.\n{}",
-			   termion::cursor::Goto(1, 14),
-			   termion::cursor::Goto(1, 15),).unwrap();
-		stdout.flush().unwrap();
+		print!("\n\rMoves: {}", self.moves);
+		print!("\n\r\n\rPress <ESC> to exit game.\n\r");
+		std::io::stdout().flush().unwrap();
 	}
 }
 
