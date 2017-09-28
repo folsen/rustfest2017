@@ -113,6 +113,16 @@ impl Game {
 		self.position == self.goal && self.picked_up
 	}
 
+	/// Passenger position
+	pub fn passenger_position(&self) -> (u32, u32) {
+		self.passenger
+	}
+
+	/// Goal position
+	pub fn goal_position(&self) -> (u32, u32) {
+		self.goal
+	}
+
 	/// Returns player position
 	pub fn player_position(&self) -> (u32, u32) {
 		self.position
