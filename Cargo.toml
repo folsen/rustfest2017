@@ -2,6 +2,7 @@
 members = [
 	"bejeweled",
 	"roguelike-tree-bot",
+	"roguelike-learning-bot",
 	"roguelike",
 	"taxi-learning-bot",
 	"taxi",

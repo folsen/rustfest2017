@@ -1,13 +1,15 @@
 extern crate id_tree as tree;
 extern crate roguelike;
+extern crate rand;
 
 use roguelike::*;
 use tree::*;
 use tree::InsertBehavior::*;
 use tree::RemoveBehavior::*;
 
-static MAX_LEVELS: u32 = 13; // Maximum depth of tree
-static MOVE_STREAK: u32 = 5; // How many moves in a row it takes before adding new layers to the tree
+static MAX_LEVELS: u32 = 10; // Maximum depth of tree
+static MOVE_STREAK: u32 = 4; // How many moves in a row it takes before adding new layers to the tree
+static GREEDY_EPSILON: f32 = 0.25; // What percentage of moves it should make greedily
 
 fn main() {
 	let mut game = Game::new(false);
@@ -18,14 +20,14 @@ fn main() {
 			game.enter_move(&best, true);
 			println!("Moved {:?}", best);
 			prune(&node, &node_id, &mut tree);
-			if game.moves % MOVE_STREAK == 0 {
+			if game.get_moves() % MOVE_STREAK == 0 {
 				add_layer(&node_id, &mut tree);
 			}
 			node = node_id;
-			if game.action == Action::Won {
+			if game.has_won() {
 				break;
 			}
-			std::thread::sleep(std::time::Duration::from_millis(300));
+			std::thread::sleep(std::time::Duration::from_millis(50));
 		} else {
 			println!("Couldn't find any more moves");
 			break;
@@ -91,14 +93,17 @@ fn append_children(parent: &NodeId, tree: &mut Tree<NodeData>, level: u32) {
 }
 
 fn optimal_step(from: &NodeId, tree: &Tree<NodeData>) -> Option<(Dir, NodeId)> {
-	let maybe_max = tree.children_ids(from).unwrap().max_by(|a, b| {
-		bottom_score(a, tree).partial_cmp(&bottom_score(b, tree)).unwrap()
-	});
-	if let Some(max_child) = maybe_max {
-		Some((tree.get(max_child).unwrap().data().0.clone(), max_child.clone()))
+	let mut children: Vec<&NodeId> = tree.children_ids(from).unwrap().into_iter().collect();
+	if children.len() == 0 {
+		return None;
+	} else if rand::random::<f32>() < GREEDY_EPSILON {
+		// Greedy sorting
+		children.sort_by(|a, b| { score_node(b, tree).partial_cmp(&score_node(a, tree)).unwrap() });
 	} else {
-		None
+		// Forward-looking sorting
+		children.sort_by(|a, b| { bottom_score(b, tree).partial_cmp(&bottom_score(a, tree)).unwrap() });
 	}
+	Some((tree.get(children[0]).unwrap().data().0.clone(), children[0].clone()))
 }
 
 fn bottom_score(node_id: &NodeId, tree: &Tree<NodeData>) -> f64 {
@@ -119,8 +124,8 @@ fn bottom_score(node_id: &NodeId, tree: &Tree<NodeData>) -> f64 {
 
 fn score_node(node_id: &NodeId, tree: &Tree<NodeData>) -> f64 {
 	let g = &tree.get(node_id).unwrap().data().1;
-	g.score as f64
-	- g.moves as f64 * 0.01
+	g.get_score() as f64
+	- g.get_moves() as f64 * 0.01
 	- g.distance_to_goal() * 0.00001
-	+ if g.action == Action::Won { 10. } else { 0. }
+	+ if g.has_won() { 10. } else { 0. }
 }

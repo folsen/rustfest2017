@@ -27,16 +27,20 @@ impl GameState {
 	}
 
 	pub fn reward(&self) -> f64 {
-		if self.state.action == Action::Won { 1. } else { 0. }
+		if self.state.has_won() { self.state.get_score() as f64 + 1. } else { 0. }
+	}
+
+	pub fn learn_state(&self) -> (u32, u32) {
+		(self.state.position.0 as u32, self.state.position.1 as u32)
 	}
 }
 
 impl Environment for GameState {
-	type State = ((Finite, Finite), Vec<Vec<Finite>>);
+	type State = (Finite, Finite);
 	type Action = Finite;
 
 	fn state_space(&self) -> Self::State {
-		((Finite::new(24), Finite::new(38)), vec![vec![Finite::new(6)]])
+		(Finite::new(24), Finite::new(38))
 	}
 	fn action_space(&self) -> Finite {
 		// The agent has 4 actions: move {up, down, left, right}
@@ -46,7 +50,7 @@ impl Environment for GameState {
 		self.state.enter_move(&Dir::from_u32(action), false);
 		let done = self.state.action == Action::Won;
 		Observation {
-			state: self.state.to_int_state(),
+			state: self.learn_state(),
 			// Punish agent for every step it takes, but reward it when it reaches the goal
 			// The optimal strategy is then to take the shortest path to the goal
 			reward: self.reward(),
@@ -56,7 +60,7 @@ impl Environment for GameState {
 	fn reset(&mut self) -> Observation<Self::State> {
 		self.state = Game::new(false);
 		Observation {
-			state: self.state.to_int_state(),
+			state: self.learn_state(),
 			reward: self.reward(),
 			done: false
 		}
@@ -77,7 +81,7 @@ fn main() {
 	// We will use Q-learning to train the agent with
 	// discount factor and learning rate both 0.9 and
 	// 10000 training iterations
-	let mut trainer = QLearner::new(env.action_space(), 0.9, 0.9, TimePeriod::TIMESTEPS(1_000_000));
+	let mut trainer = QLearner::new(env.action_space(), 0.9, 0.9, TimePeriod::TIMESTEPS(10_000_000));
 
 	// Magic happens
 	trainer.train(&mut agent, &mut env);

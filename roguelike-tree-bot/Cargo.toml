@@ -5,4 +5,5 @@ authors = ["Fredrik <fredrik@parity.io>"]
 
 [dependencies]
 id_tree = "1.1"
+rand = "0.3"
 roguelike = { path = "../roguelike" }
