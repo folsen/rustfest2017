@@ -10,10 +10,12 @@ static ENEMY_VALUE: u32 = 20;
 static ROW_SIZE: usize = 19;
 static COL_SIZE: usize = 30;
 
+/// Helper function to clear the terminal screen, not tested on Windows
 fn clear_screen() {
 	std::io::stdout().write_all("\x1b[2J\x1b[1;1H".as_bytes()).unwrap()
 }
 
+/// Dir is an enum representing directions one could make a move in
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum Dir {
 	Up,
@@ -23,6 +25,7 @@ pub enum Dir {
 }
 
 impl Dir {
+	/// The REnforce library generates random u32's and needs to go from that to an action, in this case a Dir
 	pub fn from_u32(int: &u32) -> Dir {
 		match *int {
 			0 => Dir::Up,
@@ -33,6 +36,11 @@ impl Dir {
 	}
 }
 
+/// Object representing things on the map.
+/// An enemy needs to be hit twice in a row unless you have a sword,
+/// in which case they only need to be hit once in order to die.
+/// Gold is just extra points and takes no effort to pick up and reaching the goal
+/// finishes the game regardless of how many enemies you've killed.
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Object {
 	Wall,
@@ -56,6 +64,9 @@ impl fmt::Display for Object {
 	}
 }
 
+/// An Action represents something that happened, meta-data about the last move if you will.
+/// You could've picked something up, attacked or killed an enemy, walked into a wall or won.
+/// Nothing represents that you moved, but nothing happened, meaning you moved into an empty square.
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub enum Action {
 	PickedSword(usize, usize),
@@ -82,6 +93,7 @@ impl fmt::Display for Action {
 	}
 }
 
+/// Simple type alias for the world, a matrix of objects
 type World = Vec<Vec<Object>>;
 
 /// The Game with accompanying state
@@ -92,9 +104,9 @@ pub struct Game {
 	/// Position of the player, defined as (row, column) coordinate on the world map
 	pub position: (usize, usize),
 	/// How many moves the player has made
-	pub moves: u32,
+	moves: u32,
 	/// What score the player has so far
-	pub score: u32,
+	score: u32,
 	/// Last action that you took
 	pub action: Action,
 	/// Whether or not the player has picked up the sword
@@ -102,7 +114,7 @@ pub struct Game {
 }
 
 impl Game {
-	/// Initialize a new game state
+	/// Initialize a new game state and optionally print it
 	pub fn new(print: bool) -> Game {
 		let g = Game {
 			world: world(),
@@ -117,53 +129,36 @@ impl Game {
 		};
 		g
 	}
-	pub fn to_int_state(&self) -> ((u32, u32), Vec<Vec<u32>>) {
-		((self.position.0 as u32, self.position.1 as u32), self.world_to_ints())
-	}
 
+	/// Getter for the count of moves made
 	pub fn get_moves(&self) -> u32 {
 		self.moves
 	}
 
+	/// Getter for the current score
 	pub fn get_score(&self) -> u32 {
 		self.score
 	}
 
-	pub fn distance_to_goal(&self) -> f64 {
-		((((1 - self.position.0 as i32).pow(2) + (21 - self.position.1 as i32).pow(2)) as f64).sqrt())
-	}
-
+	/// Getter for whether or not the game has been won
 	pub fn has_won(&self) -> bool {
 		self.action == Action::Won
 	}
 
-	fn world_to_ints(&self) -> Vec<Vec<u32>> {
-		self.world.iter().map(|cols| cols.iter().map(|x| {
-			match *x {
-				Object::Wall  => 0,
-				Object::Enemy => 1,
-				Object::Gold  => 2,
-				Object::Sword => 3,
-				Object::Goal  => 4,
-				Object::Empty => 5,
-			}
-		}).collect()).collect()
-	}
-
-	/// Enter move directly instead of starting an stdin loop, for instance from an automated player
-	/// Returns a bool signifying whether or not this move lead to winning the game
+	/// Enter move and optionally print the map, returning whether or not this move won the game
 	pub fn enter_move(&mut self, dir: &Dir, print: bool) -> bool {
 		self.make_move(&dir);
 		if print {
 			self.print_map();
-		};
-		if self.action == Action::Won {
+		}
+		if self.has_won() {
 			true
 		} else {
 			false
 		}
 	}
 
+	/// Make a move, this just mutates the board according to the game rules
 	fn make_move(&mut self, dir: &Dir) {
 		self.moves += 1;
 		let target = match *dir {
@@ -204,11 +199,13 @@ impl Game {
 		}
 	}
 
+	/// Convenience function to make a target position empty and move into it with the player
 	fn move_into(&mut self, target: (usize, usize)) {
 		self.world[target.0][target.1] = Object::Empty;
 		self.position = target;
 	}
 
+	/// Prints the map on screen
 	pub fn print_map(&self) {
 		clear_screen();
 		for r in 0..ROW_SIZE {
@@ -251,6 +248,7 @@ w____________wwwwwwwwww______w
 w______wwwwwwwwwwwwwwww__s___w
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 */
+/// The basic world we're playing in
 fn world() -> World {
 	vec![
 		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],

@@ -7,6 +7,7 @@ use std::io::Write;
 
 use ansi_term::Colour::{White, Black, Yellow, Green, Cyan};
 
+/// Helper function to clear the terminal screen, not tested on Windows
 fn clear_screen() {
 	std::io::stdout().write_all("\x1b[2J\x1b[1;1H".as_bytes()).unwrap()
 }
@@ -33,6 +34,8 @@ impl Dir {
 	}
 }
 
+/// Object representing things on the map.
+/// You need to pick up a `Passenger` and deliver it to `Goal`, `Wall`s are potentially in the way.
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 enum Object {
 	Wall,
@@ -57,6 +60,7 @@ pub fn distance(p0: (u32, u32), p1: (u32, u32)) -> f64 {
 	((((p0.0 as i64 - p1.0 as i64).pow(2) + (p0.1 as i64 - p1.1 as i64).pow(2)) as f64).sqrt())
 }
 
+/// Type alias for the game-world
 type World = [[Object; Game::WORLD_WIDTH]; Game::WORLD_HEIGHT];
 
 /// The Game with accompanying state
@@ -129,7 +133,7 @@ impl Game {
 		distance(self.passenger, self.position)
 	}
 
-	/// Enter move directly instead of starting an stdin loop, for instance from an automated player
+	/// Enter move directly and optionally print the map
 	/// Returns a bool signifying whether or not this move lead to winning the game
 	pub fn enter_move(&mut self, dir: Dir, print: bool) -> bool {
 		self.make_move(dir);
@@ -143,6 +147,7 @@ impl Game {
 		}
 	}
 
+	/// Makes a move and mutates the board, doesn't return anything
 	pub fn make_move(&mut self, dir: Dir) {
 		self.moves += 1;
 		let target = match dir {
@@ -165,6 +170,7 @@ impl Game {
 		}
 	}
 
+	/// Print the map on screen
 	pub fn print_map(&self) {
 		clear_screen();
 		for r in 0..Game::WORLD_HEIGHT {
@@ -184,6 +190,7 @@ impl Game {
 	}
 }
 
+/// The basic world that we're dealing with, giving a World, a position for the goal and a position for the passenger
 fn simple_world() -> (World, (u32, u32), (u32, u32)) {
 	let mut rng = rand::thread_rng();
 	let w = [
