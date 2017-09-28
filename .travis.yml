@@ -17,8 +17,8 @@ matrix:
   - rust: nightly
 
 script:
-  - cargo build -p taxi -p roguelike -p bejeweled
-  - cargo test -p taxi -p roguelike -p bejeweled
+  - cargo build -p taxi -p roguelike -p bejeweled -p leaderboard
+  - cargo test -p taxi -p roguelike -p bejeweled -p leaderboard
 
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
