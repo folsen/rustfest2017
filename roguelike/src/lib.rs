@@ -145,6 +145,11 @@ impl Game {
 		self.action == Action::Won
 	}
 
+	/// Euclidean distance to the goal
+	pub fn distance_to_goal(&self) -> f64 {
+		((((1 - self.position.0 as i32).pow(2) + (21 - self.position.1 as i32).pow(2)) as f64).sqrt())
+	}
+
 	/// Enter move and optionally print the map, returning whether or not this move won the game
 	pub fn enter_move(&mut self, dir: &Dir, print: bool) -> bool {
 		self.make_move(&dir);
@@ -255,7 +260,7 @@ fn world() -> World {
 		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Empty, Object::Goal, Object::Empty, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
 		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
 		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Enemy, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Enemy, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
-		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Empty, Object::Enemy, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Enemy, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
+		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Enemy, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Enemy, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
 		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Enemy, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
 		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
 		vec![Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Empty, Object::Empty, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall, Object::Wall],
