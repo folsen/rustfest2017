@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Dir","Move direction"]],"fn":[["distance","Calculates distance between two points"]],"struct":[["Game","The Game with accompanying state"]]});
