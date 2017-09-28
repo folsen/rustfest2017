@@ -29,13 +29,13 @@ impl GameState {
 	}
 
 	pub fn reward(&self) -> f64 {
-		if self.state.has_won() { 30. } else { 0. }
+		if self.state.has_won() { 1. } else { 0. }
 	}
 
 	pub fn q_state(&self) -> (u32, Vec<(u32, u32)>) {
 		(
-			if self.state.picked_up { 1 } else { 0 },
-			vec![self.state.position, self.state.passenger, self.state.goal]
+			if self.state.passenger_picked_up() { 1 } else { 0 },
+			vec![self.state.player_position(), self.state.passenger_position(), self.state.goal_position()]
 		)
 	}
 }
@@ -52,7 +52,7 @@ impl Environment for GameState {
 		Finite::new(4)
 	}
 	fn step(&mut self, action: &u32) -> Observation<Self::State> {
-		self.state.enter_move(&Dir::from_u32(action), false);
+		self.state.enter_move(Dir::from_u32(*action).unwrap(), false);
 		Observation {
 			state: self.q_state(),
 			reward: self.reward(),

@@ -8,8 +8,8 @@ use tree::InsertBehavior::*;
 use tree::RemoveBehavior::*;
 
 static MAX_LEVELS: u32 = 10; // Maximum depth of tree
-static MOVE_STREAK: u32 = 4; // How many moves in a row it takes before adding new layers to the tree
-static GREEDY_EPSILON: f32 = 0.25; // What percentage of moves it should make greedily
+static MOVE_STREAK: u32 = 2; // How many moves in a row it takes before adding new layers to the tree
+static GREEDY_EPSILON: f32 = 0.05; // What percentage of moves it should make greedily
 
 fn main() {
 	let mut game = Game::new(false);
